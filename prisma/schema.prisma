@@ -1,0 +1,197 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+  THERAPIST
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentMethod {
+  CASH
+  TRANSFER
+  CARD
+}
+
+model Branch {
+  id          String   @id @default(uuid())
+  name        String
+  address     String?
+  phone       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  services    BranchService[]
+  bookings    Booking[]
+  invoices    Invoice[]
+  rooms       Room[]
+
+  managerId   String?  @unique
+  manager     User?    @relation("BranchManager", fields: [managerId], references: [id])
+}
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  name        String?
+  password    String   // Hashed
+  role        Role     @default(STAFF)
+  branchId    String?
+  branch      Branch?  @relation(fields: [branchId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // For Branch Managers
+  managedBranch Branch? @relation("BranchManager")
+
+  // For Therapists
+  bookingsAsTherapist Booking[] @relation("TherapistBookings")
+  
+  // For Staff creating bookings
+  createdBookings     Booking[] @relation("CreatedBookings")
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  name        String
+  phone       String   @unique
+  email       String?
+  notes       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bookings    Booking[]
+  invoices    Invoice[]
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  duration    Int      // In minutes
+  basePrice   Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isActive    Boolean  @default(true)
+
+  branchServices BranchService[]
+  bookingItems   BookingItem[]
+
+  type           ServiceType     @default(SINGLE)
+  
+  // Relations for Combos
+  comboItems     ServiceItem[]   @relation("ComboParent") // Items included in this service (if it's a combo)
+  parentCombos   ServiceItem[]   @relation("ComboChild")  // Combos that include this service
+}
+
+enum ServiceType {
+  SINGLE
+  COMBO
+}
+
+model ServiceItem {
+  id        String   @id @default(uuid())
+  comboId   String
+  serviceId String
+  
+  combo     Service  @relation("ComboParent", fields: [comboId], references: [id], onDelete: Cascade)
+  service   Service  @relation("ComboChild", fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([comboId, serviceId])
+}
+
+// Junction table for Service prices per branch
+model BranchService {
+  id        String   @id @default(uuid())
+  branchId  String
+  serviceId String
+  price     Decimal  @db.Decimal(10, 2)
+  isActive  Boolean  @default(true)
+
+  branch    Branch   @relation(fields: [branchId], references: [id])
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([branchId, serviceId])
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  name      String
+  branchId  String
+  branch    Branch   @relation(fields: [branchId], references: [id])
+  bookings  Booking[]
+}
+
+model Booking {
+  id          String        @id @default(uuid())
+  branchId    String
+  customerId  String
+  // serviceId removed
+  therapistId String?
+  roomId      String?
+  startTime   DateTime
+  endTime     DateTime
+  status      BookingStatus @default(PENDING)
+  notes       String?
+  
+  branch      Branch        @relation(fields: [branchId], references: [id])
+  customer    Customer      @relation(fields: [customerId], references: [id])
+  bookingItems BookingItem[]
+  therapist   User?         @relation("TherapistBookings", fields: [therapistId], references: [id])
+  room        Room?         @relation(fields: [roomId], references: [id])
+  createdBy   User?         @relation("CreatedBookings", fields: [createdById], references: [id])
+  createdById String?
+
+  invoice     Invoice?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  branchId      String
+  customerId    String
+  bookingId     String?       @unique
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  discount      Decimal       @default(0) @db.Decimal(10, 2)
+  finalAmount   Decimal       @db.Decimal(10, 2) // total - discount
+  paymentMethod PaymentMethod @default(CASH)
+  paidAt        DateTime      @default(now())
+
+  branch        Branch        @relation(fields: [branchId], references: [id])
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  booking       Booking?      @relation(fields: [bookingId], references: [id])
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model BookingItem {
+  id        String   @id @default(uuid())
+  bookingId String
+  serviceId String
+  
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  service   Service  @relation(fields: [serviceId], references: [id])
+
+  @@unique([bookingId, serviceId])
+}

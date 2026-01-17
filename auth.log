@@ -1,0 +1,28 @@
+[2026-01-16T18:13:28.650Z] [INFO]: Test log info {"foo":"bar"}
+[2026-01-16T18:13:28.651Z] [ERROR]: Test log error Error: Something broke
+    at <anonymous> (/home/minhanh/Projects/outsource/massage/massage-management/scripts/test-logger.ts:5:32)
+    at Object.<anonymous> (/home/minhanh/Projects/outsource/massage/massage-management/scripts/test-logger.ts:6:51)
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+    at Object.transformer (/home/minhanh/Projects/outsource/massage/massage-management/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+    at Module._load (node:internal/modules/cjs/loader:1096:12)
+    at cjsLoader (node:internal/modules/esm/translators:298:15)
+    at ModuleWrap.<anonymous> (node:internal/modules/esm/translators:240:7)
+    at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+[2026-01-16T18:14:09.266Z] [ERROR]: Invalid password {"email":"admin@example.com"}
+[2026-01-16T18:15:23.477Z] [INFO]: Checking password {"email":"admin@example.com","providedLength":8,"storedHashStart":"$2b$10$YiX"}
+[2026-01-16T18:15:23.549Z] [INFO]: Password check result {"isValid":false}
+[2026-01-16T18:15:23.549Z] [ERROR]: Invalid password {"email":"admin@example.com"}
+[2026-01-16T18:15:50.242Z] [INFO]: Checking password {"email":"admin@example.com","providedLength":11,"storedHashStart":"$2b$10$YiX"}
+[2026-01-16T18:15:50.305Z] [INFO]: Password check result {"isValid":true}
+[2026-01-16T18:15:50.305Z] [INFO]: User authenticated successfully {"email":"admin@example.com","id":"02a101b9-7729-4c30-ba9d-50b82fd2bb14"}
+[2026-01-16T18:19:35.504Z] [INFO]: Checking password {"email":"hoan@gmail.com","providedLength":8,"storedHashStart":"$2b$10$I2O"}
+[2026-01-16T18:19:35.581Z] [INFO]: Password check result {"isValid":true}
+[2026-01-16T18:19:35.582Z] [INFO]: User authenticated successfully {"email":"hoan@gmail.com","id":"1d525d57-fcbd-473d-973d-2138eaec0dd5"}
+[2026-01-16T19:45:37.527Z] [INFO]: Checking password {"email":"ninh@gmail.com","providedLength":8,"storedHashStart":"$2b$10$d3Z"}
+[2026-01-16T19:45:37.602Z] [INFO]: Password check result {"isValid":true}
+[2026-01-16T19:45:37.602Z] [INFO]: User authenticated successfully {"email":"ninh@gmail.com","id":"29dac8f1-651f-42c9-b060-e26bece3b810"}
+[2026-01-16T20:00:09.042Z] [INFO]: Checking password {"email":"ninh@gmail.com","providedLength":8,"storedHashStart":"$2b$10$d3Z"}
+[2026-01-16T20:00:09.114Z] [INFO]: Password check result {"isValid":true}
+[2026-01-16T20:00:09.114Z] [INFO]: User authenticated successfully {"email":"ninh@gmail.com","id":"29dac8f1-651f-42c9-b060-e26bece3b810"}
