@@ -1,0 +1,74 @@
+{
+    "Navigation": {
+        "dashboard": "Bảng điều khiển",
+        "bookings": "Đặt lịch",
+        "customers": "Khách hàng",
+        "revenue": "Doanh thu",
+        "services": "Dịch vụ",
+        "staff": "Nhân viên",
+        "branches": "Chi nhánh",
+        "settings": "Cài đặt"
+    },
+    "Common": {
+        "loading": "Đang tải...",
+        "save": "Lưu",
+        "cancel": "Hủy",
+        "delete": "Xóa",
+        "edit": "Sửa",
+        "create": "Tạo mới",
+        "selectBranch": "Chọn chi nhánh",
+        "switchBranch": "Đổi chi nhánh",
+        "branchSwitched": "Đã đổi chi nhánh thành công",
+        "branchSwitchFailed": "Đổi chi nhánh thất bại"
+    },
+    "Auth": {
+        "login": "Đăng nhập",
+        "logout": "Đăng xuất",
+        "email": "Email",
+        "password": "Mật khẩu"
+    },
+    "Revenue": {
+        "title": "Nhập liệu doanh thu",
+        "description": "Ghi lại lượng khách và doanh thu trong ngày.",
+        "adminTitle": "Tổng quan doanh thu",
+        "adminDescription": "Theo dõi và phân tích doanh thu toàn hệ thống.",
+        "today": "Hôm nay",
+        "week": "Tuần này",
+        "month": "Tháng này",
+        "to": "đến",
+        "customers": "Khách",
+        "totalRevenue": "Tổng doanh thu",
+        "total": "Tổng",
+        "cash": "Tiền mặt",
+        "bank": "Chuyển khoản",
+        "card": "Thẻ",
+        "newEntry": "Tạo phiếu mới",
+        "editEntry": "Sửa phiếu",
+        "customersServed": "Số khách phục vụ",
+        "breakdown": "Chi tiết doanh thu (KRW)",
+        "saveEntry": "Lưu phiếu",
+        "updateEntry": "Cập nhật",
+        "cancel": "Hủy",
+        "historyLog": "Lịch sử",
+        "locked": "Đã khóa",
+        "loadingHistory": "Đang tải lịch sử...",
+        "noEntries": "Không có dữ liệu",
+        "adjustFilters": "Hãy thử thay đổi bộ lọc ngày.",
+        "entryRecorded": "Đã lưu phiếu doanh thu",
+        "entryUpdated": "Đã cập nhật phiếu doanh thu",
+        "entryDeleted": "Đã xóa phiếu doanh thu",
+        "validation": {
+            "customersMin": "Phải từ 0 trở lên",
+            "amountMin": "Phải từ 0 trở lên",
+            "reasonRequired": "Vui lòng nhập lý do"
+        },
+        "deleteModal": {
+            "title": "Xóa phiếu",
+            "description": "Vui lòng nhập lý do xóa phiếu này.",
+            "reasonLabel": "Lý do",
+            "confirm": "Xóa",
+            "cancel": "Hủy",
+            "placeholder": "ví dụ: Nhập sai, trùng lặp..."
+        }
+    }
+}

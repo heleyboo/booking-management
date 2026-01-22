@@ -1,0 +1,74 @@
+{
+    "Navigation": {
+        "dashboard": "Dashboard",
+        "bookings": "Bookings",
+        "customers": "Customers",
+        "revenue": "Revenue",
+        "services": "Services",
+        "staff": "Staff",
+        "branches": "Branches",
+        "settings": "Settings"
+    },
+    "Common": {
+        "loading": "Loading...",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "create": "Create",
+        "selectBranch": "Select Branch",
+        "switchBranch": "Switch Branch",
+        "branchSwitched": "Branch switched successfully",
+        "branchSwitchFailed": "Failed to switch branch"
+    },
+    "Auth": {
+        "login": "Login",
+        "logout": "Logout",
+        "email": "Email",
+        "password": "Password"
+    },
+    "Revenue": {
+        "title": "Daily Revenue Entry",
+        "description": "Record your daily customer volume and revenue collection.",
+        "adminTitle": "Revenue Overview",
+        "adminDescription": "Track and analyze revenue across all branches.",
+        "today": "Today",
+        "week": "This Week",
+        "month": "This Month",
+        "to": "to",
+        "customers": "Customers",
+        "totalRevenue": "Total Revenue",
+        "total": "Total",
+        "cash": "Cash",
+        "bank": "Bank",
+        "card": "Card",
+        "newEntry": "New Entry",
+        "editEntry": "Edit Entry",
+        "customersServed": "Customers Served",
+        "breakdown": "Revenue Breakdown (KRW)",
+        "saveEntry": "Save Entry",
+        "updateEntry": "Update Entry",
+        "cancel": "Cancel",
+        "historyLog": "History Log",
+        "locked": "Locked",
+        "loadingHistory": "Loading history...",
+        "noEntries": "No entries in range",
+        "adjustFilters": "Try adjusting the date filters above.",
+        "entryRecorded": "Entry recorded",
+        "entryUpdated": "Entry updated",
+        "entryDeleted": "Entry deleted",
+        "validation": {
+            "customersMin": "Must be 0 or more",
+            "amountMin": "Must be 0 or more",
+            "reasonRequired": "Reason is required"
+        },
+        "deleteModal": {
+            "title": "Delete Entry",
+            "description": "Please provide a reason for deleting this entry.",
+            "reasonLabel": "Reason",
+            "confirm": "Delete",
+            "cancel": "Cancel",
+            "placeholder": "e.g., Wrong input, duplicate entry..."
+        }
+    }
+}

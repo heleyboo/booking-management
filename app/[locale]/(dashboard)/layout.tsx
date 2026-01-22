@@ -3,7 +3,10 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 import Link from "next/link"
-import { LayoutDashboard, Users, Store, Calendar, ClipboardList, LogOut } from "lucide-react"
+import { getTranslations } from "next-intl/server"
+import { LayoutDashboard, Users, Store, Calendar, ClipboardList, LogOut, Banknote } from "lucide-react"
+import LanguageSwitcher from "@/app/components/LanguageSwitcher"
+import BranchSwitcher from "@/app/components/BranchSwitcher"
 
 export default async function DashboardLayout({
     children,
@@ -18,26 +21,24 @@ export default async function DashboardLayout({
 
     const role = session.user.role
 
+    const t = await getTranslations("Navigation")
+
     const navigation = [
-        { name: 'Dashboard', href: '/app/dashboard', icon: LayoutDashboard },
-        { name: 'Bookings', href: '/app/bookings', icon: Calendar },
-        { name: 'Customers', href: '/app/customers', icon: Users },
+        { name: t('dashboard'), href: '/app/dashboard', icon: LayoutDashboard },
+        { name: t('bookings'), href: '/app/bookings', icon: Calendar },
+        { name: t('customers'), href: '/app/customers', icon: Users },
+        { name: t('revenue'), href: '/app/revenue', icon: Banknote },
     ]
 
     if (role === 'ADMIN' || role === 'MANAGER') {
         navigation.push(
-            { name: 'Branches', href: '/app/branches', icon: Store },
-            { name: 'Staff', href: '/app/staff', icon: Users },
-            { name: 'Services', href: '/app/services', icon: ClipboardList },
+            { name: t('branches'), href: '/app/branches', icon: Store },
+            { name: t('staff'), href: '/app/staff', icon: Users },
+            { name: t('services'), href: '/app/services', icon: ClipboardList },
         )
     }
 
-    const branchName = session.user.branchId
-        ? (await db.branch.findUnique({
-            where: { id: session.user.branchId },
-            select: { name: true }
-        }))?.name
-        : null
+    // Note: BranchSwitcher will handle displaying and switching branches
 
     return (
         <div className="flex h-screen bg-gray-100">
@@ -50,7 +51,7 @@ export default async function DashboardLayout({
                     <nav className="flex-1 space-y-1 px-2 py-4">
                         {navigation.map((item) => (
                             <Link
-                                key={item.name}
+                                key={item.href} // Changed key to href as name is now dynamic
                                 href={item.href}
                                 className="group flex items-center rounded-md px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
                             >
@@ -76,12 +77,9 @@ export default async function DashboardLayout({
                             Dashboard
                         </h2>
                         <div className="flex items-center gap-4">
-                            {branchName && (
-                                <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
-                                    <Store className="mr-1 h-3 w-3" />
-                                    {branchName}
-                                </span>
-                            )}
+                            <LanguageSwitcher />
+                            <div className="h-4 w-px bg-gray-200" />
+                            <BranchSwitcher />
                             <span className="text-sm font-medium text-gray-500">
                                 {session.user.name ?? session.user.email} ({role})
                             </span>

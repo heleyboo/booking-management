@@ -1,0 +1,74 @@
+{
+    "Navigation": {
+        "dashboard": "대시보드",
+        "bookings": "예약",
+        "customers": "고객",
+        "revenue": "매출",
+        "services": "서비스",
+        "staff": "직원",
+        "branches": "지점",
+        "settings": "설정"
+    },
+    "Common": {
+        "loading": "로딩 중...",
+        "save": "저장",
+        "cancel": "취소",
+        "delete": "삭제",
+        "edit": "수정",
+        "create": "생성",
+        "selectBranch": "지점 선택",
+        "switchBranch": "지점 변경",
+        "branchSwitched": "지점이 성공적으로 변경되었습니다",
+        "branchSwitchFailed": "지점 변경에 실패했습니다"
+    },
+    "Auth": {
+        "login": "로그인",
+        "logout": "로그아웃",
+        "email": "이메일",
+        "password": "비밀번호"
+    },
+    "Revenue": {
+        "title": "일일 매출 입력",
+        "description": "일일 고객 수와 매출을 기록하세요.",
+        "adminTitle": "매출 현황",
+        "adminDescription": "전 지점 매출을 추적하고 분석합니다.",
+        "today": "오늘",
+        "week": "이번 주",
+        "month": "이번 달",
+        "to": "~",
+        "customers": "고객 수",
+        "totalRevenue": "총 매출",
+        "total": "합계",
+        "cash": "현금",
+        "bank": "계좌이체",
+        "card": "카드",
+        "newEntry": "새 항목",
+        "editEntry": "항목 수정",
+        "customersServed": "응대 고객 수",
+        "breakdown": "매출 내역 (KRW)",
+        "saveEntry": "저장",
+        "updateEntry": "업데이트",
+        "cancel": "취소",
+        "historyLog": "기록 로그",
+        "locked": "잠김",
+        "loadingHistory": "기록 불러오는 중...",
+        "noEntries": "데이터가 없습니다",
+        "adjustFilters": "날짜 필터를 조정해보세요.",
+        "entryRecorded": "항목이 저장되었습니다",
+        "entryUpdated": "항목이 업데이트되었습니다",
+        "entryDeleted": "항목이 삭제되었습니다",
+        "validation": {
+            "customersMin": "0 이상이어야 합니다",
+            "amountMin": "0 이상이어야 합니다",
+            "reasonRequired": "사유를 입력해주세요"
+        },
+        "deleteModal": {
+            "title": "항목 삭제",
+            "description": "삭제 사유를 입력해주세요.",
+            "reasonLabel": "사유",
+            "confirm": "삭제",
+            "cancel": "취소",
+            "placeholder": "예: 입력 오류, 중복..."
+        }
+    }
+}

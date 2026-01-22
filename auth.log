@@ -26,3 +26,12 @@
 [2026-01-16T20:00:09.042Z] [INFO]: Checking password {"email":"ninh@gmail.com","providedLength":8,"storedHashStart":"$2b$10$d3Z"}
 [2026-01-16T20:00:09.114Z] [INFO]: Password check result {"isValid":true}
 [2026-01-16T20:00:09.114Z] [INFO]: User authenticated successfully {"email":"ninh@gmail.com","id":"29dac8f1-651f-42c9-b060-e26bece3b810"}
+[2026-01-22T02:48:45.578Z] [INFO]: Checking password {"email":"hoan@gmail.com","providedLength":8,"storedHashStart":"$2b$10$I2O"}
+[2026-01-22T02:48:45.706Z] [INFO]: Password check result {"isValid":true}
+[2026-01-22T02:48:45.706Z] [INFO]: User authenticated successfully {"email":"hoan@gmail.com","id":"1d525d57-fcbd-473d-973d-2138eaec0dd5"}
+[2026-01-22T06:34:17.977Z] [INFO]: Checking password {"email":"hoan@gmail.com","providedLength":8,"storedHashStart":"$2b$10$I2O"}
+[2026-01-22T06:34:18.045Z] [INFO]: Password check result {"isValid":true}
+[2026-01-22T06:34:18.046Z] [INFO]: User authenticated successfully {"email":"hoan@gmail.com","id":"1d525d57-fcbd-473d-973d-2138eaec0dd5"}
+[2026-01-22T07:42:05.422Z] [INFO]: Checking password {"email":"hoan@gmail.com","providedLength":8,"storedHashStart":"$2b$10$I2O"}
+[2026-01-22T07:42:05.495Z] [INFO]: Password check result {"isValid":true}
+[2026-01-22T07:42:05.495Z] [INFO]: User authenticated successfully {"email":"hoan@gmail.com","id":"1d525d57-fcbd-473d-973d-2138eaec0dd5"}
