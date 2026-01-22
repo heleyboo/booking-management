@@ -1,25 +1,46 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
-import { format, startOfMonth, endOfMonth, parseISO } from "date-fns"
+import { useState, useEffect, useRef } from "react"
+import { format, startOfMonth, endOfMonth, parseISO, startOfWeek, isSameDay } from "date-fns"
 import { Loader2, Download, Filter, DollarSign, CreditCard, Banknote } from "lucide-react"
 import { SearchableSelect, Option } from "@/app/components/SearchableSelect"
 import { toast } from "sonner"
 import { useTranslations } from "next-intl"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
 export function AdminView() {
     const t = useTranslations("Revenue")
+    const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
+    const isUpdatingFromUrl = useRef(false)
+
     const [entries, setEntries] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [branches, setBranches] = useState<any[]>([])
     const [staffOptions, setStaffOptions] = useState<Option[]>([])
 
-    // Filters
-    const [dateFrom, setDateFrom] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"))
-    const [dateTo, setDateTo] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"))
-    const [selectedBranch, setSelectedBranch] = useState<string>("")
-    const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([])
+    // Initialize filters from URL or defaults
+    const getInitialFilters = () => {
+        const urlFrom = searchParams.get("from")
+        const urlTo = searchParams.get("to")
+        const urlBranch = searchParams.get("branchId")
+        const urlStaffIds = searchParams.getAll("staffId")
+
+        return {
+            dateFrom: urlFrom || format(startOfMonth(new Date()), "yyyy-MM-dd"),
+            dateTo: urlTo || format(new Date(), "yyyy-MM-dd"),
+            selectedBranch: urlBranch || "",
+            selectedStaffIds: urlStaffIds || []
+        }
+    }
+
+    const initialFilters = getInitialFilters()
+    const [dateFrom, setDateFrom] = useState(initialFilters.dateFrom)
+    const [dateTo, setDateTo] = useState(initialFilters.dateTo)
+    const [selectedBranch, setSelectedBranch] = useState<string>(initialFilters.selectedBranch)
+    const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>(initialFilters.selectedStaffIds)
 
     useEffect(() => {
         // Fetch branches for filter
@@ -55,6 +76,45 @@ export function AdminView() {
                 toast.error(t("loadingError") || "Failed to load staff list")
             })
     }, [])
+
+    // Sync URL params to state when URL changes (e.g., browser back/forward)
+    useEffect(() => {
+        const urlFrom = searchParams.get("from")
+        const urlTo = searchParams.get("to")
+        const urlBranch = searchParams.get("branchId")
+        const urlStaffIds = searchParams.getAll("staffId")
+
+        if (
+            (urlFrom && urlFrom !== dateFrom) ||
+            (urlTo && urlTo !== dateTo) ||
+            (urlBranch !== selectedBranch) ||
+            (JSON.stringify(urlStaffIds) !== JSON.stringify(selectedStaffIds))
+        ) {
+            isUpdatingFromUrl.current = true
+            if (urlFrom) setDateFrom(urlFrom)
+            if (urlTo) setDateTo(urlTo)
+            setSelectedBranch(urlBranch || "")
+            setSelectedStaffIds(urlStaffIds)
+            setTimeout(() => {
+                isUpdatingFromUrl.current = false
+            }, 0)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams.toString()])
+
+    // Update URL when filters change
+    useEffect(() => {
+        if (isUpdatingFromUrl.current) return
+
+        const params = new URLSearchParams()
+        if (dateFrom) params.set("from", dateFrom)
+        if (dateTo) params.set("to", dateTo)
+        if (selectedBranch) params.set("branchId", selectedBranch)
+        selectedStaffIds.forEach(id => params.append("staffId", id))
+
+        const newUrl = `${pathname}?${params.toString()}`
+        router.replace(newUrl, { scroll: false })
+    }, [dateFrom, dateTo, selectedBranch, selectedStaffIds, pathname, router])
 
     useEffect(() => {
         fetchData()
@@ -96,6 +156,41 @@ export function AdminView() {
 
     const grandTotal = totals.cash + totals.bank + totals.card
 
+    const setQuickFilter = (type: 'today' | 'week' | 'month') => {
+        const today = new Date()
+        let from = today
+        const to = today
+
+        if (type === 'week') from = startOfWeek(today, { weekStartsOn: 1 })
+        if (type === 'month') from = startOfMonth(today)
+
+        setDateFrom(format(from, 'yyyy-MM-dd'))
+        setDateTo(format(to, 'yyyy-MM-dd'))
+    }
+
+    // Determine which quick filter is currently active
+    const getActiveFilter = (): 'today' | 'week' | 'month' | null => {
+        const today = new Date()
+        const fromDate = parseISO(dateFrom)
+        const toDate = parseISO(dateTo)
+        
+        // Check if to date is today
+        if (!isSameDay(toDate, today)) return null
+        
+        // Check if it's today
+        if (isSameDay(fromDate, today)) return 'today'
+        
+        // Check if it's this week
+        const weekStart = startOfWeek(today, { weekStartsOn: 1 })
+        if (isSameDay(fromDate, weekStart)) return 'week'
+        
+        // Check if it's this month
+        const monthStart = startOfMonth(today)
+        if (isSameDay(fromDate, monthStart)) return 'month'
+        
+        return null
+    }
+
     const handleExport = () => {
         // Simple CSV Export
         const headers = [t("table.date"), t("table.branch"), t("table.staff"), t("cash"), t("bank"), t("card"), t("total")]
@@ -120,26 +215,60 @@ export function AdminView() {
     return (
         <div className="space-y-6">
             {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap gap-4 items-end">
-                <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">{t("filters.from")}</label>
-                    <input
-                        type="date"
-                        value={dateFrom}
-                        onChange={e => setDateFrom(e.target.value)}
-                        className="block rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 px-3"
-                    />
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                {/* Quick Filters */}
+                <div className="flex gap-2 mb-4">
+                    <button 
+                        onClick={() => setQuickFilter('today')} 
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                            getActiveFilter() === 'today'
+                                ? 'bg-indigo-50 text-indigo-700'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                    >
+                        {t('today')}
+                    </button>
+                    <button 
+                        onClick={() => setQuickFilter('week')} 
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                            getActiveFilter() === 'week'
+                                ? 'bg-indigo-50 text-indigo-700'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                    >
+                        {t('week')}
+                    </button>
+                    <button 
+                        onClick={() => setQuickFilter('month')} 
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                            getActiveFilter() === 'month'
+                                ? 'bg-indigo-50 text-indigo-700'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                    >
+                        {t('month')}
+                    </button>
                 </div>
-                <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">{t("filters.to")}</label>
-                    <input
-                        type="date"
-                        value={dateTo}
-                        onChange={e => setDateTo(e.target.value)}
-                        className="block rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 px-3"
-                    />
-                </div>
-                <div className="w-56">
+                <div className="flex flex-wrap gap-4 items-end">
+                    <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">{t("filters.from")}</label>
+                        <input
+                            type="date"
+                            value={dateFrom}
+                            onChange={e => setDateFrom(e.target.value)}
+                            className="block rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 px-3"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">{t("filters.to")}</label>
+                        <input
+                            type="date"
+                            value={dateTo}
+                            onChange={e => setDateTo(e.target.value)}
+                            className="block rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 px-3"
+                        />
+                    </div>
+                    <div className="w-56">
                     <label className="block text-xs font-medium text-gray-500 mb-1">{t("filters.branch")}</label>
                     <select
                         value={selectedBranch}
@@ -163,13 +292,14 @@ export function AdminView() {
                         className="w-full"
                     />
                 </div>
-                <button
-                    onClick={handleExport}
-                    className="inline-flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
-                >
-                    <Download className="h-4 w-4 mr-2" />
-                    {t("exportCSV")}
-                </button>
+                    <button
+                        onClick={handleExport}
+                        className="inline-flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
+                    >
+                        <Download className="h-4 w-4 mr-2" />
+                        {t("exportCSV")}
+                    </button>
+                </div>
             </div>
 
             {/* Summary Cards */}
