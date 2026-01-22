@@ -8,6 +8,7 @@ import { LayoutDashboard, Users, Store, Calendar, ClipboardList, LogOut, Banknot
 import LanguageSwitcher from "@/app/components/LanguageSwitcher"
 import BranchSwitcher from "@/app/components/BranchSwitcher"
 import { NavLink } from "@/app/components/NavLink"
+import { MobileSidebar } from "@/app/components/MobileSidebar"
 
 export default async function DashboardLayout({
     children,
@@ -69,13 +70,20 @@ export default async function DashboardLayout({
             <div className="flex flex-1 flex-col overflow-hidden">
                 <header className="bg-white shadow">
                     <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-                            {tLayout('dashboard')}
-                        </h2>
+                        <MobileSidebar
+                            navigation={navigation}
+                            appName={tLayout('appName')}
+                            logoutText={tLayout('logout')}
+                            role={role}
+                        />
                         <div className="flex items-center gap-4">
                             <LanguageSwitcher />
-                            <div className="h-4 w-px bg-gray-200" />
-                            <BranchSwitcher />
+                            {role !== 'ADMIN' && (
+                                <>
+                                    <div className="h-4 w-px bg-gray-200" />
+                                    <BranchSwitcher />
+                                </>
+                            )}
                             <span className="text-sm font-medium text-gray-500">
                                 {session.user.name ?? session.user.email} ({role})
                             </span>

@@ -7,7 +7,7 @@ import * as z from "zod"
 import { format, isSameDay, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from "date-fns"
 import { Loader2, Plus, Pencil, Trash2, CheckCircle2, Calendar, TrendingUp, Users, DollarSign, CreditCard, Banknote } from "lucide-react"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useTranslations } from "next-intl"
 
 // --- Helper Component: SmartMoneyInput ---
@@ -130,12 +130,31 @@ export function StaffView() {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [deleteReason, setDeleteReason] = useState("")
+    const [activeTab, setActiveTab] = useState<"entry" | "history">("entry")
+    const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
+    const isUpdatingFromUrl = useRef(false)
 
-    // Analytics State
-    const [dateRange, setDateRange] = useState<{ from: string, to: string }>({
-        from: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
-        to: format(new Date(), 'yyyy-MM-dd')
-    })
+    // Analytics State - Initialize from URL or defaults
+    const getInitialDateRange = () => {
+        const fromParam = searchParams.get("from")
+        const toParam = searchParams.get("to")
+        
+        if (fromParam && toParam) {
+            return {
+                from: fromParam,
+                to: toParam
+            }
+        }
+        
+        return {
+            from: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+            to: format(new Date(), 'yyyy-MM-dd')
+        }
+    }
+
+    const [dateRange, setDateRange] = useState<{ from: string, to: string }>(getInitialDateRange())
     const [stats, setStats] = useState({
         totalCustomers: 0,
         totalRevenue: 0,
@@ -143,8 +162,6 @@ export function StaffView() {
         totalBank: 0,
         totalCard: 0
     })
-
-    const router = useRouter()
 
     const form = useForm<RevenueFormValues>({
         resolver: zodResolver(revenueSchema),
@@ -193,6 +210,43 @@ export function StaffView() {
         setStats(newStats)
     }
 
+    // Sync URL params to state when URL changes (e.g., browser back/forward)
+    useEffect(() => {
+        const urlFrom = searchParams.get("from")
+        const urlTo = searchParams.get("to")
+        
+        if (urlFrom && urlTo && (urlFrom !== dateRange.from || urlTo !== dateRange.to)) {
+            isUpdatingFromUrl.current = true
+            setDateRange({
+                from: urlFrom,
+                to: urlTo
+            })
+            // Reset flag after state update
+            setTimeout(() => {
+                isUpdatingFromUrl.current = false
+            }, 0)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams.toString()])
+
+    // Update URL when dateRange changes (but not when updating from URL)
+    useEffect(() => {
+        if (isUpdatingFromUrl.current) return
+        
+        const currentFrom = searchParams.get("from")
+        const currentTo = searchParams.get("to")
+        
+        // Only update URL if it's different from current URL params
+        if (currentFrom !== dateRange.from || currentTo !== dateRange.to) {
+            const params = new URLSearchParams()
+            params.set("from", dateRange.from)
+            params.set("to", dateRange.to)
+            
+            const newUrl = `${pathname}?${params.toString()}`
+            router.replace(newUrl, { scroll: false })
+        }
+    }, [dateRange.from, dateRange.to, pathname, router, searchParams])
+
     useEffect(() => {
         fetchEntries()
     }, [dateRange])
@@ -209,6 +263,29 @@ export function StaffView() {
             from: format(from, 'yyyy-MM-dd'),
             to: format(to, 'yyyy-MM-dd')
         })
+    }
+
+    // Determine which quick filter is currently active
+    const getActiveFilter = (): 'today' | 'week' | 'month' | null => {
+        const today = new Date()
+        const fromDate = parseISO(dateRange.from)
+        const toDate = parseISO(dateRange.to)
+        
+        // Check if to date is today
+        if (!isSameDay(toDate, today)) return null
+        
+        // Check if it's today
+        if (isSameDay(fromDate, today)) return 'today'
+        
+        // Check if it's this week
+        const weekStart = startOfWeek(today, { weekStartsOn: 1 })
+        if (isSameDay(fromDate, weekStart)) return 'week'
+        
+        // Check if it's this month
+        const monthStart = startOfMonth(today)
+        if (isSameDay(fromDate, monthStart)) return 'month'
+        
+        return null
     }
 
     const onSubmit = async (data: RevenueFormValues) => {
@@ -302,88 +379,39 @@ export function StaffView() {
 
     return (
         <div className="space-y-8">
-            {/* Analytics Dashboard */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* Controls */}
-                <div className="md:col-span-4 flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                    <div className="flex gap-2">
-                        <button onClick={() => setQuickFilter('today')} className="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">{t('today')}</button>
-                        <button onClick={() => setQuickFilter('week')} className="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">{t('week')}</button>
-                        <button onClick={() => setQuickFilter('month')} className="px-3 py-1.5 text-xs font-medium bg-indigo-50 text-indigo-700 rounded-lg">{t('month')}</button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="date"
-                            value={dateRange.from}
-                            onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
-                            className="text-xs border-gray-200 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                        />
-                        <span className="text-gray-400 text-xs">{t('to')}</span>
-                        <input
-                            type="date"
-                            value={dateRange.to}
-                            onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
-                            className="text-xs border-gray-200 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                        />
-                    </div>
-                </div>
-
-                {/* Scorecards */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                            <Users className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">{t('customers')}</p>
-                            <h3 className="text-2xl font-bold text-gray-900">{stats.totalCustomers}</h3>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Cash Widget */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
-                            <Banknote className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">{t('cash')}</p>
-                            <h3 className="text-2xl font-bold text-gray-900">₩{stats.totalCash.toLocaleString()}</h3>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bank Widget */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                            <DollarSign className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">{t('bank')}</p>
-                            <h3 className="text-2xl font-bold text-gray-900">₩{stats.totalBank.toLocaleString()}</h3>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Card Widget */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-purple-50 text-purple-600 rounded-lg">
-                            <CreditCard className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">{t('card')}</p>
-                            <h3 className="text-2xl font-bold text-gray-900">₩{stats.totalCard.toLocaleString()}</h3>
-                        </div>
-                    </div>
-                </div>
+            {/* Tabs for small screens */}
+            <div className="lg:hidden border-b border-gray-200 mb-6">
+                <nav className="flex space-x-8" aria-label="Tabs">
+                    <button
+                        onClick={() => setActiveTab("entry")}
+                        className={`
+                            py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap
+                            ${activeTab === "entry"
+                                ? "border-indigo-500 text-indigo-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                            }
+                        `}
+                    >
+                        {t('newEntry')}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("history")}
+                        className={`
+                            py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap
+                            ${activeTab === "history"
+                                ? "border-indigo-500 text-indigo-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                            }
+                        `}
+                    >
+                        {t('historyLog')}
+                    </button>
+                </nav>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Form Section */}
-                <div className="lg:col-span-1" id="revenue-form">
+                <div className={`lg:col-span-1 ${activeTab !== "entry" ? "hidden lg:block" : ""}`} id="revenue-form">
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-6">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-lg font-semibold text-gray-900">
@@ -476,7 +504,113 @@ export function StaffView() {
                 </div>
 
                 {/* History Section */}
-                <div className="lg:col-span-2">
+                <div className={`lg:col-span-2 ${activeTab !== "history" ? "hidden lg:block" : ""}`}>
+                    {/* Analytics Dashboard - Inside history tab */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        {/* Controls */}
+                        <div className="md:col-span-4 flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                            <div className="flex gap-2">
+                                <button 
+                                    onClick={() => setQuickFilter('today')} 
+                                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                                        getActiveFilter() === 'today'
+                                            ? 'bg-indigo-50 text-indigo-700'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {t('today')}
+                                </button>
+                                <button 
+                                    onClick={() => setQuickFilter('week')} 
+                                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                                        getActiveFilter() === 'week'
+                                            ? 'bg-indigo-50 text-indigo-700'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {t('week')}
+                                </button>
+                                <button 
+                                    onClick={() => setQuickFilter('month')} 
+                                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                                        getActiveFilter() === 'month'
+                                            ? 'bg-indigo-50 text-indigo-700'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {t('month')}
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="date"
+                                    value={dateRange.from}
+                                    onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
+                                    className="text-xs border-gray-200 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                />
+                                <span className="text-gray-400 text-xs">{t('to')}</span>
+                                <input
+                                    type="date"
+                                    value={dateRange.to}
+                                    onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
+                                    className="text-xs border-gray-200 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Scorecards */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                                    <Users className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">{t('customers')}</p>
+                                    <h3 className="text-2xl font-bold text-gray-900">{stats.totalCustomers}</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Cash Widget */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                                    <Banknote className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">{t('cash')}</p>
+                                    <h3 className="text-2xl font-bold text-gray-900">₩{stats.totalCash.toLocaleString()}</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Bank Widget */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                                    <DollarSign className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">{t('bank')}</p>
+                                    <h3 className="text-2xl font-bold text-gray-900">₩{stats.totalBank.toLocaleString()}</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Card Widget */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-purple-50 text-purple-600 rounded-lg">
+                                    <CreditCard className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">{t('card')}</p>
+                                    <h3 className="text-2xl font-bold text-gray-900">₩{stats.totalCard.toLocaleString()}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                             <h3 className="text-base font-semibold text-gray-900">{t('historyLog')}</h3>

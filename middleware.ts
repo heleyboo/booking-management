@@ -5,7 +5,8 @@ import { NextRequest, NextResponse } from "next/server"
 const intlMiddleware = createMiddleware({
     locales: ["en", "vi", "ko"],
     defaultLocale: "vi",
-    localePrefix: "always"
+    localePrefix: "always",
+    localeDetection: false
 })
 
 const authMiddleware = withAuth(

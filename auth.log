@@ -56,3 +56,6 @@
 [2026-01-22T11:14:57.055Z] [INFO]: Checking password {"email":"admin@example.com","providedLength":11,"storedHashStart":"$2b$10$6IF"}
 [2026-01-22T11:14:57.123Z] [INFO]: Password check result {"isValid":true}
 [2026-01-22T11:14:57.124Z] [INFO]: User authenticated successfully {"email":"admin@example.com","id":"02a101b9-7729-4c30-ba9d-50b82fd2bb14"}
+[2026-01-22T12:49:21.958Z] [INFO]: Checking password {"email":"admin@example.com","providedLength":11,"storedHashStart":"$2b$10$6IF"}
+[2026-01-22T12:49:22.021Z] [INFO]: Password check result {"isValid":true}
+[2026-01-22T12:49:22.021Z] [INFO]: User authenticated successfully {"email":"admin@example.com","id":"02a101b9-7729-4c30-ba9d-50b82fd2bb14"}
