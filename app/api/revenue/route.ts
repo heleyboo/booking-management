@@ -76,7 +76,7 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url)
         const from = searchParams.get("from")
         const to = searchParams.get("to")
-        const staffId = searchParams.get("staffId")
+        const staffIds = searchParams.getAll("staffId") // Get all staffId params (supports multiple)
         const branchIdParam = searchParams.get("branchId")
 
         // RBAC:
@@ -89,7 +89,9 @@ export async function GET(req: Request) {
         let where: any = {}
 
         if (session.user.role === "ADMIN") {
-            if (staffId) where.staffId = staffId
+            if (staffIds.length > 0) {
+                where.staffId = { in: staffIds }
+            }
             if (branchIdParam) where.branchId = branchIdParam
         } else {
             // Staff/Manager/Therapist: Filter by current branch

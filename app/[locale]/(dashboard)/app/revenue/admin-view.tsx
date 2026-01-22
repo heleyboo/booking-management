@@ -3,29 +3,62 @@
 
 import { useState, useEffect } from "react"
 import { format, startOfMonth, endOfMonth, parseISO } from "date-fns"
-import { Loader2, Download, Filter, Search } from "lucide-react"
-import { SearchableSelect } from "@/app/components/SearchableSelect"
+import { Loader2, Download, Filter, DollarSign, CreditCard, Banknote } from "lucide-react"
+import { SearchableSelect, Option } from "@/app/components/SearchableSelect"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 
 export function AdminView() {
+    const t = useTranslations("Revenue")
     const [entries, setEntries] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [branches, setBranches] = useState<any[]>([])
+    const [staffOptions, setStaffOptions] = useState<Option[]>([])
 
     // Filters
     const [dateFrom, setDateFrom] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"))
     const [dateTo, setDateTo] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"))
     const [selectedBranch, setSelectedBranch] = useState<string>("")
-    const [searchStaff, setSearchStaff] = useState("")
+    const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([])
 
     useEffect(() => {
         // Fetch branches for filter
-        fetch("/api/branches").then(res => res.json()).then(setBranches).catch(console.error)
+        fetch("/api/branches")
+            .then(res => res.json())
+            .then(setBranches)
+            .catch(err => {
+                console.error("Failed to fetch branches:", err)
+                toast.error(t("loadingError") || "Failed to load branches")
+            })
+        
+        // Fetch all staff/users for filter
+        fetch("/api/users")
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("Failed to fetch users")
+                }
+                return res.json()
+            })
+            .then((users: any[]) => {
+                // Map all users to options, sorted by name
+                const options: Option[] = users
+                    .map(user => ({
+                        id: user.id,
+                        label: user.name || user.email,
+                        subLabel: user.email
+                    }))
+                    .sort((a, b) => a.label.localeCompare(b.label))
+                setStaffOptions(options)
+            })
+            .catch(err => {
+                console.error("Failed to fetch users:", err)
+                toast.error(t("loadingError") || "Failed to load staff list")
+            })
     }, [])
 
     useEffect(() => {
         fetchData()
-    }, [dateFrom, dateTo, selectedBranch])
+    }, [dateFrom, dateTo, selectedBranch, selectedStaffIds])
 
     const fetchData = async () => {
         setIsLoading(true)
@@ -34,6 +67,10 @@ export function AdminView() {
             if (dateFrom) params.append("from", dateFrom)
             if (dateTo) params.append("to", dateTo)
             if (selectedBranch) params.append("branchId", selectedBranch)
+            // Add multiple staff IDs
+            if (selectedStaffIds.length > 0) {
+                selectedStaffIds.forEach(id => params.append("staffId", id))
+            }
 
             const res = await fetch(`/api/revenue?${params.toString()}`)
             if (res.ok) {
@@ -41,16 +78,14 @@ export function AdminView() {
                 setEntries(data)
             }
         } catch (error) {
-            toast.error("Failed to load revenue data")
+            toast.error(t("loadingError") || "Failed to load revenue data")
         } finally {
             setIsLoading(false)
         }
     }
 
-    // Filter by staff name locally (since API filter is ID based, simpler for UI to just filter loaded list if list isn't huge, or can update API to search. For now local.)
-    const filteredEntries = entries.filter(entry =>
-        !searchStaff || entry.staff.name?.toLowerCase().includes(searchStaff.toLowerCase())
-    )
+    // No need for local filtering since API handles it now
+    const filteredEntries = entries
 
     // Calculate Totals
     const totals = filteredEntries.reduce((acc, curr) => ({
@@ -63,7 +98,7 @@ export function AdminView() {
 
     const handleExport = () => {
         // Simple CSV Export
-        const headers = ["Date", "Branch", "Staff", "Cash", "Bank", "Card", "Total"]
+        const headers = [t("table.date"), t("table.branch"), t("table.staff"), t("cash"), t("bank"), t("card"), t("total")]
         const csvData = filteredEntries.map(e => [
             format(parseISO(e.date), "yyyy-MM-dd"),
             e.branch.name,
@@ -87,7 +122,7 @@ export function AdminView() {
             {/* Filters */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap gap-4 items-end">
                 <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">From</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">{t("filters.from")}</label>
                     <input
                         type="date"
                         value={dateFrom}
@@ -96,7 +131,7 @@ export function AdminView() {
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">To</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">{t("filters.to")}</label>
                     <input
                         type="date"
                         value={dateTo}
@@ -105,58 +140,82 @@ export function AdminView() {
                     />
                 </div>
                 <div className="w-56">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Branch</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">{t("filters.branch")}</label>
                     <select
                         value={selectedBranch}
                         onChange={e => setSelectedBranch(e.target.value)}
                         className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 px-3"
                     >
-                        <option value="">All Branches</option>
+                        <option value="">{t("filters.allBranches")}</option>
                         {branches.map(b => (
                             <option key={b.id} value={b.id}>{b.name}</option>
                         ))}
                     </select>
                 </div>
                 <div className="flex-1 min-w-[200px]">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Search Staff</label>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Filter by staff name..."
-                            value={searchStaff}
-                            onChange={e => setSearchStaff(e.target.value)}
-                            className="block w-full rounded-lg border-gray-300 pl-9 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 px-3"
-                        />
-                    </div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">{t("filters.searchStaff")}</label>
+                    <SearchableSelect
+                        options={staffOptions}
+                        value={selectedStaffIds}
+                        onChange={(ids: string[]) => setSelectedStaffIds(ids)}
+                        placeholder={t("filters.searchStaffPlaceholder")}
+                        multiple={true}
+                        className="w-full"
+                    />
                 </div>
                 <button
                     onClick={handleExport}
                     className="inline-flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
                 >
                     <Download className="h-4 w-4 mr-2" />
-                    Export CSV
+                    {t("exportCSV")}
                 </button>
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-indigo-600 rounded-xl p-6 text-white shadow-sm">
-                    <p className="text-indigo-100 text-sm font-medium">Total Revenue</p>
-                    <p className="text-3xl font-bold mt-2">₩{grandTotal.toLocaleString()}</p>
-                </div>
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                    <p className="text-gray-500 text-sm font-medium">Card Payments</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-2">₩{totals.card.toLocaleString()}</p>
-                    <div className="w-full bg-gray-100 rounded-full h-1.5 mt-3">
-                        <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${grandTotal ? (totals.card / grandTotal * 100) : 0}%` }}></div>
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-white/20 rounded-lg">
+                            <DollarSign className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <p className="text-indigo-100 text-sm font-medium">{t("totalRevenue")}</p>
+                            <p className="text-3xl font-bold mt-1">₩{grandTotal.toLocaleString()}</p>
+                        </div>
                     </div>
                 </div>
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                    <p className="text-gray-500 text-sm font-medium">Cash & Bank</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-2">₩{(totals.cash + totals.bank).toLocaleString()}</p>
-                    <div className="w-full bg-gray-100 rounded-full h-1.5 mt-3">
-                        <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${grandTotal ? ((totals.cash + totals.bank) / grandTotal * 100) : 0}%` }}></div>
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                            <Banknote className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <p className="text-gray-500 text-sm font-medium">{t("cash")}</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">₩{totals.cash.toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                            <DollarSign className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <p className="text-gray-500 text-sm font-medium">{t("bank")}</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">₩{totals.bank.toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-purple-50 text-purple-600 rounded-lg">
+                            <CreditCard className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <p className="text-gray-500 text-sm font-medium">{t("card")}</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">₩{totals.card.toLocaleString()}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -167,13 +226,13 @@ export function AdminView() {
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Branch</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Staff</th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Cash</th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Bank</th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Card</th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Total</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("table.date")}</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("table.branch")}</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("table.staff")}</th>
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("cash")}</th>
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("bank")}</th>
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("card")}</th>
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">{t("total")}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
@@ -181,13 +240,13 @@ export function AdminView() {
                                 <tr>
                                     <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                                         <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-                                        Loading data...
+                                        {t("loadingData")}
                                     </td>
                                 </tr>
                             ) : filteredEntries.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                                        No records found for the selected period.
+                                        {t("noRecords")}
                                     </td>
                                 </tr>
                             ) : (
@@ -225,7 +284,7 @@ export function AdminView() {
                         {!isLoading && filteredEntries.length > 0 && (
                             <tfoot className="bg-gray-50 font-semibold">
                                 <tr>
-                                    <td colSpan={3} className="px-6 py-4 text-sm text-gray-900">Total</td>
+                                    <td colSpan={3} className="px-6 py-4 text-sm text-gray-900">{t("total")}</td>
                                     <td className="px-6 py-4 text-sm text-gray-700 text-right font-mono">{totals.cash.toLocaleString()}</td>
                                     <td className="px-6 py-4 text-sm text-gray-700 text-right font-mono">{totals.bank.toLocaleString()}</td>
                                     <td className="px-6 py-4 text-sm text-gray-700 text-right font-mono">{totals.card.toLocaleString()}</td>

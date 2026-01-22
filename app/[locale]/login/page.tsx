@@ -2,12 +2,13 @@
 
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { useTranslations, useLocale } from "next-intl"
 
 const schema = z.object({
     email: z.string().email(),
@@ -17,8 +18,11 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function LoginPage() {
+    const t = useTranslations("Auth")
+    const locale = useLocale()
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
+    const searchParams = useSearchParams()
     const {
         register,
         handleSubmit,
@@ -37,13 +41,40 @@ export default function LoginPage() {
             })
 
             if (result?.error) {
-                toast.error("Invalid credentials")
+                toast.error(t("invalidCredentials"))
             } else {
-                router.push("/app/dashboard")
-                toast.success("Logged in successfully")
+                // Check for callbackUrl in search params, otherwise redirect to revenue
+                let callbackUrl = searchParams.get("callbackUrl")
+                
+                // Decode the callbackUrl if it's URL encoded
+                if (callbackUrl) {
+                    try {
+                        callbackUrl = decodeURIComponent(callbackUrl)
+                    } catch (e) {
+                        // If decoding fails, use the original
+                    }
+                }
+                
+                // If callbackUrl is empty, "/", or not provided, redirect to revenue
+                const shouldRedirectToRevenue = !callbackUrl || callbackUrl === "/" || callbackUrl === "" || callbackUrl === `/${locale}` || callbackUrl === `/${locale}/`
+                
+                let redirectUrl: string
+                if (shouldRedirectToRevenue) {
+                    redirectUrl = `/${locale}/app/revenue`
+                } else {
+                    // If callbackUrl doesn't start with locale, add it
+                    if (!callbackUrl.startsWith(`/${locale}`) && !callbackUrl.startsWith('/en/') && !callbackUrl.startsWith('/vi/') && !callbackUrl.startsWith('/ko/')) {
+                        redirectUrl = `/${locale}${callbackUrl.startsWith('/') ? callbackUrl : '/' + callbackUrl}`
+                    } else {
+                        redirectUrl = callbackUrl
+                    }
+                }
+                
+                router.push(redirectUrl)
+                toast.success(t("loggedInSuccess"))
             }
         } catch (error) {
-            toast.error("Something went wrong")
+            toast.error(t("somethingWentWrong"))
         } finally {
             setIsLoading(false)
         }
@@ -53,9 +84,9 @@ export default function LoginPage() {
         <div className="flex h-screen w-full items-center justify-center bg-gray-50">
             <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-10 shadow-lg">
                 <div className="text-center">
-                    <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
+                    <h2 className="text-3xl font-bold text-gray-900">{t("welcomeBack")}</h2>
                     <p className="mt-2 text-sm text-gray-600">
-                        Sign in to your account
+                        {t("signInToAccount")}
                     </p>
                 </div>
 
@@ -66,7 +97,7 @@ export default function LoginPage() {
                                 htmlFor="email"
                                 className="block text-sm font-medium text-gray-700"
                             >
-                                Email address
+                                {t("emailAddress")}
                             </label>
                             <input
                                 {...register("email")}
@@ -87,7 +118,7 @@ export default function LoginPage() {
                                 htmlFor="password"
                                 className="block text-sm font-medium text-gray-700"
                             >
-                                Password
+                                {t("password")}
                             </label>
                             <input
                                 {...register("password")}
@@ -110,7 +141,7 @@ export default function LoginPage() {
                         className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400"
                     >
                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Sign in
+                        {t("signIn")}
                     </button>
                 </form>
             </div>

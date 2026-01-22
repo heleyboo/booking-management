@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Loader2, Store } from "lucide-react"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 
 interface Branch {
     id: string
@@ -13,6 +14,7 @@ interface Branch {
 }
 
 export default function BranchSelectorClient({ branches }: { branches: Branch[] }) {
+    const t = useTranslations("SelectBranch")
     const router = useRouter()
     const { update } = useSession()
     const [isLoading, setIsLoading] = useState(false)
@@ -36,11 +38,11 @@ export default function BranchSelectorClient({ branches }: { branches: Branch[] 
             await update({ branchId })
 
             // 3. Redirect
-            toast.success("Branch selected successfully")
+            toast.success(t("branchSelected"))
             router.push("/app/dashboard")
             router.refresh()
         } catch (error) {
-            toast.error("Failed to select branch")
+            toast.error(t("branchSelectFailed"))
             setIsLoading(false)
             setSelectedId(null)
         }
@@ -55,10 +57,10 @@ export default function BranchSelectorClient({ branches }: { branches: Branch[] 
                     </div>
                 </div>
                 <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-                    Select Your Branch
+                    {t("title")}
                 </h2>
                 <p className="mt-2 text-center text-sm text-gray-600">
-                    Please select the branch you are working at today
+                    {t("description")}
                 </p>
             </div>
 
@@ -93,7 +95,7 @@ export default function BranchSelectorClient({ branches }: { branches: Branch[] 
 
                 {branches.length === 0 && (
                     <div className="text-center p-6 bg-white rounded-lg border border-gray-200 shadow-sm mx-4">
-                        <p className="text-gray-500">No branches found. Please contact an administrator.</p>
+                        <p className="text-gray-500">{t("noBranches")}</p>
                     </div>
                 )}
             </div>

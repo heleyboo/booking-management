@@ -9,6 +9,7 @@ import { SearchableSelect } from "@/app/components/SearchableSelect"
 import { Loader2, Calendar as CalendarIcon, User, Scissors } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 
 const bookingSchema = z.object({
     isNewCustomer: z.boolean().default(false),
@@ -63,6 +64,8 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ customers, services, therapists, rooms, onSuccess, onCancel, initialData }: BookingFormProps) {
+    const t = useTranslations("Bookings")
+    const tCommon = useTranslations("Common")
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
 
@@ -163,24 +166,24 @@ export function BookingForm({ customers, services, therapists, rooms, onSuccess,
                     {isNewCustomer ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 animate-in fade-in slide-in-from-top-2">
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Full Name <span className="text-red-500">*</span></label>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">{t("fullName")} <span className="text-red-500">*</span></label>
                                 <input
                                     type="text"
                                     {...form.register("newCustomer.name")}
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2"
-                                    placeholder="Enter customer name"
+                                    placeholder={t("fullName")}
                                 />
                                 {form.formState.errors.newCustomer?.name && (
                                     <p className="mt-1 text-sm text-red-600">{form.formState.errors.newCustomer.name.message}</p>
                                 )}
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Phone Number <span className="text-red-500">*</span></label>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">{t("phoneNumber")} <span className="text-red-500">*</span></label>
                                 <input
                                     type="text"
                                     {...form.register("newCustomer.phone")}
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2"
-                                    placeholder="Enter phone number"
+                                    placeholder={t("phoneNumber")}
                                 />
                                 {form.formState.errors.newCustomer?.phone && (
                                     <p className="mt-1 text-sm text-red-600">{form.formState.errors.newCustomer.phone.message}</p>
@@ -198,7 +201,7 @@ export function BookingForm({ customers, services, therapists, rooms, onSuccess,
                                     }))}
                                     value={form.watch("customerId")}
                                     onChange={(val) => form.setValue("customerId", val, { shouldValidate: true })}
-                                    placeholder="Search customer by name or phone..."
+                                    placeholder={t("searchCustomer")}
                                 />
                             </div>
                             {form.formState.errors.customerId && (
@@ -212,18 +215,18 @@ export function BookingForm({ customers, services, therapists, rooms, onSuccess,
                 <div className="col-span-2 sm:col-span-1">
                     <label className="block text-sm font-medium text-gray-700 flex items-center gap-2 mb-1">
                         <Scissors className="h-4 w-4 text-indigo-500" />
-                        Services
+                        {t("services") || "Services"}
                     </label>
                     <SearchableSelect
                         multiple
                         options={services.map(s => ({
                             id: s.id,
                             label: s.name,
-                            subLabel: `${s.duration}min - ${new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(s.price || s.basePrice)}`
+                            subLabel: `${s.duration}${t("min")} - ${new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(s.price || s.basePrice)}`
                         }))}
                         value={form.watch("serviceIds")}
                         onChange={(val) => form.setValue("serviceIds", val, { shouldValidate: true })}
-                        placeholder="Select services..."
+                        placeholder={t("selectServices") || "Select services..."}
                     />
                     {form.formState.errors.serviceIds && (
                         <p className="mt-1 text-sm text-red-600">{form.formState.errors.serviceIds.message}</p>
@@ -234,7 +237,7 @@ export function BookingForm({ customers, services, therapists, rooms, onSuccess,
                 <div className="col-span-2 sm:col-span-1">
                     <label className="block text-sm font-medium text-gray-700 flex items-center gap-2 mb-1">
                         <CalendarIcon className="h-4 w-4 text-indigo-500" />
-                        Start Time
+                        {t("startTime") || "Start Time"}
                     </label>
                     <input
                         type="datetime-local"
@@ -250,13 +253,13 @@ export function BookingForm({ customers, services, therapists, rooms, onSuccess,
                 <div>
                     <label className="block text-sm font-medium text-gray-700 flex items-center gap-2 mb-1">
                         <User className="h-4 w-4 text-indigo-500" />
-                        Therapist <span className="text-gray-400 text-xs font-normal">(Optional)</span>
+                        {t("therapist")} <span className="text-gray-400 text-xs font-normal">({t("optional")})</span>
                     </label>
                     <select
                         {...form.register("therapistId")}
                         className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2.5 px-3"
                     >
-                        <option value="">Any Therapist</option>
+                        <option value="">{t("anyTherapist") || "Any Therapist"}</option>
                         {therapists.map((t) => (
                             <option key={t.id} value={t.id}>
                                 {t.name || t.email}
@@ -269,13 +272,13 @@ export function BookingForm({ customers, services, therapists, rooms, onSuccess,
                 <div>
                     <label className="block text-sm font-medium text-gray-700 flex items-center gap-2 mb-1">
                         <CalendarIcon className="h-4 w-4 text-indigo-500" /> {/* Should be Room icon or Door? CalendarIcon used as placeholder previously */}
-                        Room <span className="text-gray-400 text-xs font-normal">(Optional)</span>
+                        {t("room")} <span className="text-gray-400 text-xs font-normal">({t("optional")})</span>
                     </label>
                     <select
                         {...form.register("roomId")}
                         className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2.5 px-3"
                     >
-                        <option value="">Any Room</option>
+                        <option value="">{t("anyRoom") || "Any Room"}</option>
                         {rooms.map((r) => (
                             <option key={r.id} value={r.id}>
                                 {r.name}
@@ -288,7 +291,7 @@ export function BookingForm({ customers, services, therapists, rooms, onSuccess,
             {/* Service Summary Card */}
             {selectedServices.length > 0 && (
                 <div className="rounded-lg bg-indigo-50 p-4 border border-indigo-100 animate-in fade-in slide-in-from-top-2">
-                    <h4 className="text-sm font-semibold text-indigo-900 mb-2">Selected Services ({selectedServices.length})</h4>
+                    <h4 className="text-sm font-semibold text-indigo-900 mb-2">{t("selectedServices")} ({selectedServices.length})</h4>
                     <ul className="space-y-1 mb-3">
                         {selectedServices.map(s => (
                             <li key={s.id} className="flex justify-between text-xs text-indigo-700">
@@ -298,7 +301,7 @@ export function BookingForm({ customers, services, therapists, rooms, onSuccess,
                         ))}
                     </ul>
                     <div className="border-t border-indigo-200 pt-2 flex justify-between items-center">
-                        <span className="text-sm font-medium text-indigo-900">Total Duration: {totalDuration} min</span>
+                        <span className="text-sm font-medium text-indigo-900">{t("totalDuration")}: {totalDuration} {t("min")}</span>
                         <span className="text-lg font-bold text-indigo-600">
                             {new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(totalPrice)}
                         </span>
@@ -308,12 +311,12 @@ export function BookingForm({ customers, services, therapists, rooms, onSuccess,
 
             {/* Notes */}
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("notes")}</label>
                 <textarea
                     {...form.register("notes")}
                     className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2"
                     rows={3}
-                    placeholder="Any special requests or details..."
+                    placeholder={t("specialRequests")}
                 />
             </div>
 
@@ -324,7 +327,7 @@ export function BookingForm({ customers, services, therapists, rooms, onSuccess,
                     onClick={onCancel}
                     className="rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
                 >
-                    Cancel
+                    {tCommon("cancel")}
                 </button>
                 <button
                     type="button"
@@ -333,7 +336,7 @@ export function BookingForm({ customers, services, therapists, rooms, onSuccess,
                     className="inline-flex justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 transition-colors"
                 >
                     {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    {initialData ? "Save" : "Create Booking"}
+                    {initialData ? t("save") : t("createBooking")}
                 </button>
                 <button
                     type="button"
@@ -342,7 +345,7 @@ export function BookingForm({ customers, services, therapists, rooms, onSuccess,
                     className="inline-flex justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 transition-colors"
                 >
                     {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    {initialData ? "Save & Confirm" : "Create & Confirm"}
+                    {initialData ? t("saveAndConfirm") : t("createAndConfirm")}
                 </button>
             </div>
         </form>

@@ -35,3 +35,24 @@
 [2026-01-22T07:42:05.422Z] [INFO]: Checking password {"email":"hoan@gmail.com","providedLength":8,"storedHashStart":"$2b$10$I2O"}
 [2026-01-22T07:42:05.495Z] [INFO]: Password check result {"isValid":true}
 [2026-01-22T07:42:05.495Z] [INFO]: User authenticated successfully {"email":"hoan@gmail.com","id":"1d525d57-fcbd-473d-973d-2138eaec0dd5"}
+[2026-01-22T10:31:04.527Z] [INFO]: Checking password {"email":"staff1@example.com","providedLength":11,"storedHashStart":"$2b$10$6IF"}
+[2026-01-22T10:31:04.598Z] [INFO]: Password check result {"isValid":true}
+[2026-01-22T10:31:04.598Z] [INFO]: User authenticated successfully {"email":"staff1@example.com","id":"655a2d64-20c8-49c8-98b9-92b8a5c731dc"}
+[2026-01-22T11:07:49.983Z] [INFO]: Checking password {"email":"hoan@gmail.com","providedLength":8,"storedHashStart":"$2b$10$I2O"}
+[2026-01-22T11:07:50.045Z] [INFO]: Password check result {"isValid":true}
+[2026-01-22T11:07:50.045Z] [INFO]: User authenticated successfully {"email":"hoan@gmail.com","id":"1d525d57-fcbd-473d-973d-2138eaec0dd5"}
+[2026-01-22T11:10:31.223Z] [INFO]: Checking password {"email":"hoan@gmail.com","providedLength":8,"storedHashStart":"$2b$10$I2O"}
+[2026-01-22T11:10:31.293Z] [INFO]: Password check result {"isValid":true}
+[2026-01-22T11:10:31.293Z] [INFO]: User authenticated successfully {"email":"hoan@gmail.com","id":"1d525d57-fcbd-473d-973d-2138eaec0dd5"}
+[2026-01-22T11:11:05.737Z] [INFO]: Checking password {"email":"hoan@gmail.com","providedLength":8,"storedHashStart":"$2b$10$I2O"}
+[2026-01-22T11:11:05.807Z] [INFO]: Password check result {"isValid":true}
+[2026-01-22T11:11:05.807Z] [INFO]: User authenticated successfully {"email":"hoan@gmail.com","id":"1d525d57-fcbd-473d-973d-2138eaec0dd5"}
+[2026-01-22T11:13:32.176Z] [INFO]: Checking password {"email":"hoan@gmail.com","providedLength":8,"storedHashStart":"$2b$10$I2O"}
+[2026-01-22T11:13:32.246Z] [INFO]: Password check result {"isValid":true}
+[2026-01-22T11:13:32.247Z] [INFO]: User authenticated successfully {"email":"hoan@gmail.com","id":"1d525d57-fcbd-473d-973d-2138eaec0dd5"}
+[2026-01-22T11:14:49.979Z] [INFO]: Checking password {"email":"admin@example.com","providedLength":8,"storedHashStart":"$2b$10$6IF"}
+[2026-01-22T11:14:50.041Z] [INFO]: Password check result {"isValid":false}
+[2026-01-22T11:14:50.042Z] [ERROR]: Invalid password {"email":"admin@example.com"}
+[2026-01-22T11:14:57.055Z] [INFO]: Checking password {"email":"admin@example.com","providedLength":11,"storedHashStart":"$2b$10$6IF"}
+[2026-01-22T11:14:57.123Z] [INFO]: Password check result {"isValid":true}
+[2026-01-22T11:14:57.124Z] [INFO]: User authenticated successfully {"email":"admin@example.com","id":"02a101b9-7729-4c30-ba9d-50b82fd2bb14"}

@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Loader2, Plus, X, User, Phone, Mail, Search, Trash2, Edit, History, CalendarCheck } from "lucide-react"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 
 const customerSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -31,6 +32,8 @@ interface CustomerClientProps {
 }
 
 export default function CustomersClient({ initialCustomers, availableServices, userBranchId, userRole, activeBranches = [] }: CustomerClientProps) {
+    const t = useTranslations("Customers")
+    const tCommon = useTranslations("Common")
     const [customers, setCustomers] = useState(initialCustomers)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingCustomer, setEditingCustomer] = useState<any | null>(null)
@@ -81,7 +84,7 @@ export default function CustomersClient({ initialCustomers, availableServices, u
     }
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this customer?")) return;
+        if (!confirm(t("confirmDelete"))) return;
 
         try {
             const res = await fetch(`/api/customers/${id}`, {
@@ -93,9 +96,9 @@ export default function CustomersClient({ initialCustomers, availableServices, u
             if (!res.ok) throw new Error("Failed to delete")
 
             setCustomers(customers.filter(c => c.id !== id))
-            toast.success("Customer deleted")
+            toast.success(t("customerDeleted"))
         } catch (error) {
-            toast.error("Failed to delete customer")
+            toast.error(t("deleteFailed"))
         }
     }
 
@@ -169,7 +172,7 @@ export default function CustomersClient({ initialCustomers, availableServices, u
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
+                <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
                 <div className="flex w-full sm:w-auto items-center gap-2">
                     <div className="relative flex-grow sm:flex-grow-0">
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -178,7 +181,7 @@ export default function CustomersClient({ initialCustomers, availableServices, u
                         <input
                             type="text"
                             className="block w-full rounded-md border border-gray-300 pl-10 pr-3 py-2 text-sm placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:w-64"
-                            placeholder="Search by name or phone..."
+                            placeholder={t("searchPlaceholder") || "Search by name or phone..."}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -188,7 +191,7 @@ export default function CustomersClient({ initialCustomers, availableServices, u
                         className="flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 whitespace-nowrap"
                     >
                         <Plus className="mr-2 h-4 w-4" />
-                        Add Customer
+                        {t("addCustomer")}
                     </button>
                 </div>
             </div>
@@ -197,11 +200,11 @@ export default function CustomersClient({ initialCustomers, availableServices, u
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Notes</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">History</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t("name")}</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t("contact")}</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">{t("notes")}</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t("history")}</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t("actions")}</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white">
@@ -214,7 +217,7 @@ export default function CustomersClient({ initialCustomers, availableServices, u
                                         </div>
                                         <div className="ml-4">
                                             <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                                            <div className="text-xs text-gray-400">Since {new Date(customer.createdAt).toLocaleDateString()}</div>
+                                            <div className="text-xs text-gray-400">{t("since")} {new Date(customer.createdAt).toLocaleDateString()}</div>
                                         </div>
                                     </div>
                                 </td>
@@ -233,7 +236,7 @@ export default function CustomersClient({ initialCustomers, availableServices, u
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {customer._count?.bookings || 0} bookings
+                                        {customer._count?.bookings || 0} {t("bookings") || "bookings"}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -251,7 +254,7 @@ export default function CustomersClient({ initialCustomers, availableServices, u
                         {filteredCustomers.length === 0 && (
                             <tr>
                                 <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                                    No customers found.
+                                    {t("noCustomersFound") || "No customers found."}
                                 </td>
                             </tr>
                         )}
@@ -263,7 +266,7 @@ export default function CustomersClient({ initialCustomers, availableServices, u
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
                         <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-xl font-bold">{editingCustomer ? "Edit Customer" : "Add Customer"}</h2>
+                            <h2 className="text-xl font-bold">{editingCustomer ? t("editCustomer") : t("addCustomer")}</h2>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700">
                                 <X className="h-6 w-6" />
                             </button>
@@ -271,41 +274,41 @@ export default function CustomersClient({ initialCustomers, availableServices, u
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("fullName")}</label>
                                 <input
                                     {...register("name")}
                                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                                    placeholder="John Doe"
+                                    placeholder={t("fullName")}
                                 />
                                 {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("phoneNumber")}</label>
                                 <input
                                     {...register("phone")}
                                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                                    placeholder="(555) 123-4567"
+                                    placeholder={t("phoneNumber")}
                                 />
                                 {errors.phone && <p className="text-sm text-red-600">{errors.phone.message}</p>}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Email (Optional)</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("emailOptional")}</label>
                                 <input
                                     {...register("email")}
                                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                                    placeholder="john@example.com"
+                                    placeholder={t("emailPlaceholder") || "john@example.com"}
                                 />
                                 {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Notes</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("notes")}</label>
                                 <textarea
                                     {...register("notes")}
                                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                                    placeholder="Preferences, allergies..."
+                                    placeholder={t("notesPlaceholder") || "Preferences, allergies..."}
                                 />
                             </div>
 
@@ -320,37 +323,37 @@ export default function CustomersClient({ initialCustomers, availableServices, u
                                         />
                                         <label htmlFor="isWalkIn" className="ml-2 block text-sm font-medium text-gray-900 flex items-center gap-2">
                                             <CalendarCheck className="h-4 w-4 text-green-600" />
-                                            Register Service immediately? (Walk-in)
+                                            {t("registerServiceImmediately")}
                                         </label>
                                     </div>
 
                                     {isWalkIn && (
                                         <div className="bg-gray-50 p-3 rounded-md border border-gray-200 animate-in fade-in slide-in-from-top-1">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Select Service</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">{t("selectService")}</label>
                                             <select
                                                 {...register("serviceId")}
                                                 className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
                                             >
-                                                <option value="">-- Choose a service --</option>
+                                                <option value="">{t("chooseService")}</option>
                                                 {availableServices.map(s => (
                                                     <option key={s.id} value={s.id}>
                                                         {s.name} ({s.duration} min) - {new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(s.price)}
                                                     </option>
                                                 ))}
                                             </select>
-                                            <p className="text-xs text-gray-500 mt-1">This will create a CONFIRMED booking starting now.</p>
+                                            <p className="text-xs text-gray-500 mt-1">{t("walkInBookingNote")}</p>
                                         </div>
                                     )}
 
                                     {/* Branch Selector for Admin/User without Branch */}
                                     {isWalkIn && !userBranchId && (
                                         <div className="bg-orange-50 p-3 rounded-md border border-orange-200 mt-2 animate-in fade-in">
-                                            <label className="block text-sm font-medium text-orange-800 mb-1">Select Branch</label>
+                                            <label className="block text-sm font-medium text-orange-800 mb-1">{t("selectBranch")}</label>
                                             <select
                                                 {...register("branchId")}
                                                 className="block w-full rounded-md border border-orange-300 px-3 py-2 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500"
                                             >
-                                                <option value="">-- Choose a branch --</option>
+                                                <option value="">{t("chooseBranch")}</option>
                                                 {activeBranches.map(b => (
                                                     <option key={b.id} value={b.id}>{b.name}</option>
                                                 ))}
@@ -367,7 +370,7 @@ export default function CustomersClient({ initialCustomers, availableServices, u
                                     onClick={() => setIsModalOpen(false)}
                                     className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                                 >
-                                    Cancel
+                                    {tCommon("cancel")}
                                 </button>
                                 <button
                                     type="submit"
@@ -375,7 +378,7 @@ export default function CustomersClient({ initialCustomers, availableServices, u
                                     className="flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:bg-gray-400"
                                 >
                                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {editingCustomer ? "Update Customer" : (isWalkIn ? "Create & Book" : "Create Customer")}
+                                    {editingCustomer ? t("updateCustomer") : (isWalkIn ? t("createAndBook") : t("createCustomer"))}
                                 </button>
                             </div>
                         </form>

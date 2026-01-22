@@ -8,6 +8,7 @@ import { z } from "zod"
 import { Loader2, Plus, X, Sparkles, Edit, Trash2, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 import { ConfirmDialog } from "@/app/components/ConfirmDialog"
+import { useTranslations } from "next-intl"
 
 const serviceSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -26,6 +27,8 @@ interface ServicesClientProps {
 }
 
 export default function ServicesClient({ initialServices, singleServices }: ServicesClientProps) {
+    const t = useTranslations("Services")
+    const tCommon = useTranslations("Common")
     const [services, setServices] = useState(initialServices)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingService, setEditingService] = useState<any | null>(null)
@@ -101,7 +104,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
             if (!res.ok) throw new Error("Failed to delete service")
 
             setServices(services.filter(s => s.id !== deletingId))
-            toast.success("Service deleted")
+            toast.success(t("serviceDeleted"))
             router.refresh()
         } catch (error) {
             toast.error("Failed to delete service")
@@ -207,7 +210,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold text-gray-900">Services Management</h1>
+                <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
                 <div className="flex items-center gap-4">
                     <select
                         value={searchParams.get("status") || "active"}
@@ -222,15 +225,15 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                         }}
                         className="rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                     >
-                        <option value="active">Active Services</option>
-                        <option value="deleted">Deleted Services</option>
+                        <option value="active">{t("activeServices")}</option>
+                        <option value="deleted">{t("deletedServices")}</option>
                     </select>
                     <button
                         onClick={openCreateModal}
                         className="flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
                     >
                         <Plus className="mr-2 h-4 w-4" />
-                        Add Service
+                        {t("addService")}
                     </button>
                 </div>
             </div>
@@ -238,7 +241,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
             {selectedIds.size > 0 && (
                 <div className="bg-indigo-50 border border-indigo-100 rounded-md p-4 flex items-center justify-between">
                     <span className="text-sm text-indigo-700 font-medium">
-                        {selectedIds.size} selected
+                        {selectedIds.size} {t("selected")}
                     </span>
                     <div className="flex items-center gap-2">
                         {searchParams.get("status") === "deleted" ? (
@@ -248,7 +251,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                                 className="flex items-center rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
                             >
                                 <RotateCcw className="mr-2 h-4 w-4" />
-                                Recover Selected
+                                {t("recoverSelected")}
                             </button>
                         ) : (
                             <button
@@ -257,7 +260,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                                 className="flex items-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
                             >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Delete Selected
+                                {t("deleteSelected")}
                             </button>
                         )}
                     </div>
@@ -277,19 +280,19 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                                 />
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Service Name
+                                {t("serviceName")}
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Duration
+                                {t("duration")}
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Base Price
+                                {t("basePrice")}
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Description
+                                {t("description")}
                             </th>
                             <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
+                                {t("actions")}
                             </th>
                         </tr>
                     </thead>
@@ -341,7 +344,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                         {services.length === 0 && (
                             <tr>
                                 <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
-                                    No services found.
+                                    {t("noServicesFound")}
                                 </td>
                             </tr>
                         )}
@@ -353,7 +356,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
                         <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-xl font-bold">Add New Service</h2>
+                            <h2 className="text-xl font-bold">{editingService ? t("updateService") : t("addNewService")}</h2>
                             <button
                                 onClick={() => setIsModalOpen(false)}
                                 className="text-gray-500 hover:text-gray-700"
@@ -364,7 +367,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Service Type</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("serviceType")}</label>
                                 <div className="mt-1 flex gap-4">
                                     <label className="flex items-center gap-2">
                                         <input
@@ -373,7 +376,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                                             {...register("type")}
                                             className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
                                         />
-                                        <span className="text-sm text-gray-900">Single Service</span>
+                                        <span className="text-sm text-gray-900">{t("singleService")}</span>
                                     </label>
                                     <label className="flex items-center gap-2">
                                         <input
@@ -382,13 +385,13 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                                             {...register("type")}
                                             className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
                                         />
-                                        <span className="text-sm text-gray-900">Combo Package</span>
+                                        <span className="text-sm text-gray-900">{t("comboPackage")}</span>
                                     </label>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Service Name</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("serviceName")}</label>
                                 <input
                                     {...register("name")}
                                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
@@ -398,7 +401,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Description</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("description")}</label>
                                 <textarea
                                     {...register("description")}
                                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
@@ -408,7 +411,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
 
                             {serviceType === "COMBO" && (
                                 <div className="border border-indigo-100 bg-indigo-50 rounded-md p-3">
-                                    <label className="block text-sm font-medium text-indigo-900 mb-2">Select Included Services</label>
+                                    <label className="block text-sm font-medium text-indigo-900 mb-2">{t("selectIncludedServices")}</label>
                                     <div className="space-y-2 max-h-40 overflow-y-auto">
                                         {singleServices.map(s => (
                                             <div key={s.id} className="flex items-center">
@@ -426,14 +429,14 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                                         ))}
                                     </div>
                                     <p className="text-xs text-indigo-700 mt-2">
-                                        Selected: {selectedItems.length} items.
+                                        {t("selectedItems")}: {selectedItems.length} {t("items")}.
                                     </p>
                                 </div>
                             )}
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Duration (mins)</label>
+                                    <label className="block text-sm font-medium text-gray-700">{t("duration")}</label>
                                     <input
                                         {...register("duration")}
                                         type="number"
@@ -444,7 +447,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Base Price (₩)</label>
+                                    <label className="block text-sm font-medium text-gray-700">{t("basePrice")}</label>
                                     <input
                                         {...register("basePrice")}
                                         type="number"
@@ -461,7 +464,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                                     onClick={() => setIsModalOpen(false)}
                                     className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                                 >
-                                    Cancel
+                                    {t("cancel")}
                                 </button>
                                 <button
                                     type="submit"
@@ -469,7 +472,7 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                                     className="flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:bg-gray-400"
                                 >
                                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {editingService ? "Update Service" : "Create Service"}
+                                    {editingService ? t("updateService") : t("createService")}
                                 </button>
                             </div>
                         </form>
@@ -481,8 +484,8 @@ export default function ServicesClient({ initialServices, singleServices }: Serv
                 isOpen={!!deletingId}
                 onClose={() => setDeletingId(null)}
                 onConfirm={confirmDelete}
-                title="Delete Service"
-                description="Are you sure you want to delete this service? This action cannot be undone."
+                title={t("deleteService") || "Delete Service"}
+                description={t("deleteServiceConfirm") || "Are you sure you want to delete this service? This action cannot be undone."}
                 variant="danger"
                 isLoading={isLoading}
             />

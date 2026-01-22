@@ -6,6 +6,7 @@ import { Plus, Calendar, Clock, User, Scissors, MoreHorizontal, Loader2, Pencil,
 import { format } from "date-fns"
 import { BookingForm } from "./booking-form"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 
 interface BookingsClientProps {
     initialBookings: any[]
@@ -17,6 +18,8 @@ interface BookingsClientProps {
 }
 
 export default function BookingsClient({ initialBookings, services, therapists, rooms, customers, branchId }: BookingsClientProps) {
+    const t = useTranslations("Bookings")
+    const tCommon = useTranslations("Common")
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -79,12 +82,12 @@ export default function BookingsClient({ initialBookings, services, therapists, 
 
             if (!res.ok) throw new Error("Failed to update status")
 
-            toast.success("Booking status updated")
+            toast.success(t("statusUpdated"))
             router.refresh()
             // Optimistic update
             setBookings(bookings.map(b => b.id === id ? { ...b, status: newStatus } : b))
         } catch (error) {
-            toast.error("Failed to update status")
+            toast.error(t("statusUpdateFailed"))
         }
     }
 
@@ -106,12 +109,12 @@ export default function BookingsClient({ initialBookings, services, therapists, 
     if (!branchId) {
         return (
             <div className="flex flex-col items-center justify-center p-12 bg-white rounded-lg shadow-sm border border-gray-200">
-                <p className="text-gray-500 mb-4">You need to select a branch to manage bookings.</p>
+                <p className="text-gray-500 mb-4">{t("selectBranchFirst")}</p>
                 <button
                     onClick={() => router.push("/select-branch")}
                     className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
                 >
-                    Select Branch
+                    {tCommon("selectBranch")}
                 </button>
             </div>
         )
@@ -121,22 +124,22 @@ export default function BookingsClient({ initialBookings, services, therapists, 
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-gray-900">Bookings</h1>
-                    <p className="text-sm text-gray-500">Manage appointments for your branch.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-gray-900">{t("title")}</h1>
+                    <p className="text-sm text-gray-500">{t("description")}</p>
                 </div>
                 <button
                     onClick={handleCreateClick}
                     className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 self-start sm:self-auto"
                 >
                     <Plus className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
-                    New Booking
+                    {t("newBooking")}
                 </button>
             </div>
 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
                 <div className="flex-1">
-                    <label htmlFor="search" className="sr-only">Search</label>
+                    <label htmlFor="search" className="sr-only">{t("search")}</label>
                     <input
                         type="text"
                         name="search"
@@ -163,7 +166,7 @@ export default function BookingsClient({ initialBookings, services, therapists, 
                             className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                         />
                         <label htmlFor="show-cancelled" className="text-sm text-gray-700 whitespace-nowrap select-none cursor-pointer">
-                            Show Cancelled
+                            {t("showCancelled")}
                         </label>
                     </div>
                 </div>
@@ -174,7 +177,7 @@ export default function BookingsClient({ initialBookings, services, therapists, 
                 <ul role="list" className="divide-y divide-gray-200">
                     {bookings.length === 0 ? (
                         <li className="px-6 py-12 text-center text-gray-500">
-                            No bookings found for today.
+                            {t("noBookingsFound")}
                         </li>
                     ) : (
                         bookings.map((booking) => (
@@ -207,7 +210,7 @@ export default function BookingsClient({ initialBookings, services, therapists, 
                                                 </span>
                                             ))}
                                             {booking.bookingItems.length === 0 && (
-                                                <span className="text-xs text-gray-400 italic">No services selected</span>
+                                                <span className="text-xs text-gray-400 italic">{t("noServicesSelected")}</span>
                                             )}
                                             {booking.therapist && (
                                                 <span className="flex items-center gap-1.5 text-xs text-gray-500">
@@ -226,7 +229,7 @@ export default function BookingsClient({ initialBookings, services, therapists, 
                                             title="Confirm Booking"
                                         >
                                             <Check className="h-3 w-3" />
-                                            Confirm
+                                            {t("confirm")}
                                         </button>
                                     )}
                                     {(booking.status === 'PENDING' || booking.status === 'CONFIRMED') && (
@@ -236,7 +239,7 @@ export default function BookingsClient({ initialBookings, services, therapists, 
                                             title="Cancel Booking"
                                         >
                                             <X className="h-3 w-3" />
-                                            Cancel
+                                            {t("cancel")}
                                         </button>
                                     )}
                                     {booking.status !== 'CANCELLED' && (
@@ -245,7 +248,7 @@ export default function BookingsClient({ initialBookings, services, therapists, 
                                             className="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 flex items-center gap-1"
                                         >
                                             <Pencil className="h-3 w-3 text-gray-500" />
-                                            Edit
+                                            {tCommon("edit")}
                                         </button>
                                     )}
                                 </div>
@@ -261,14 +264,14 @@ export default function BookingsClient({ initialBookings, services, therapists, 
                     <div className="w-full max-w-2xl rounded-xl bg-white p-8 shadow-2xl max-h-[90vh] overflow-y-auto ring-1 ring-gray-900/5">
                         <div className="mb-6 flex items-center justify-between">
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900">{selectedBooking ? 'Edit Booking' : 'New Booking'}</h2>
-                                <p className="text-sm text-gray-500 mt-1">{selectedBooking ? 'Update booking details' : 'Schedule a session for a customer'}</p>
+                                <h2 className="text-xl font-bold text-gray-900">{selectedBooking ? t("editBooking") : t("newBooking")}</h2>
+                                <p className="text-sm text-gray-500 mt-1">{selectedBooking ? t("updateDetails") : t("scheduleSession")}</p>
                             </div>
                             <button
                                 onClick={closeModal}
                                 className="rounded-full p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                             >
-                                <span className="sr-only">Close</span>
+                                <span className="sr-only">{t("close")}</span>
                                 <Plus className="h-6 w-6 rotate-45" />
                             </button>
                         </div>

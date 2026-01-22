@@ -74,6 +74,18 @@ export const authOptions: NextAuthOptions = {
             }
 
             return token
+        },
+        async redirect({ url, baseUrl }) {
+            // If url is just the baseUrl or "/", redirect to revenue
+            if (url === baseUrl || url === `${baseUrl}/` || url === "/") {
+                return `${baseUrl}/app/revenue`
+            }
+            // If there's a valid callbackUrl, use it
+            if (url.startsWith(baseUrl)) {
+                return url
+            }
+            // Otherwise, redirect to revenue screen
+            return `${baseUrl}/app/revenue`
         }
     },
     pages: {

@@ -8,6 +8,7 @@ import { z } from "zod"
 import { Role } from "@prisma/client"
 import { Loader2, Plus, X } from "lucide-react"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 
 const userSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -23,6 +24,8 @@ interface StaffClientProps {
 }
 
 export default function StaffClient({ initialUsers }: StaffClientProps) {
+    const t = useTranslations("Staff")
+    const tCommon = useTranslations("Common")
     const [users, setUsers] = useState(initialUsers)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -56,7 +59,7 @@ export default function StaffClient({ initialUsers }: StaffClientProps) {
 
             const newUser = await response.json()
             setUsers([newUser, ...users])
-            toast.success("User created successfully")
+            toast.success(t("userCreated"))
             setIsModalOpen(false)
             reset()
             router.refresh()
@@ -64,7 +67,7 @@ export default function StaffClient({ initialUsers }: StaffClientProps) {
             if (error instanceof Error) {
                 toast.error(error.message)
             } else {
-                toast.error("Something went wrong")
+                toast.error(t("somethingWentWrong"))
             }
         } finally {
             setIsLoading(false)
@@ -74,13 +77,13 @@ export default function StaffClient({ initialUsers }: StaffClientProps) {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold text-gray-900">Staff Management</h1>
+                <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
                 >
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Staff
+                    {t("addStaff")}
                 </button>
             </div>
 
@@ -89,16 +92,16 @@ export default function StaffClient({ initialUsers }: StaffClientProps) {
                     <thead className="bg-gray-50">
                         <tr>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Name
+                                {t("name")}
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Email
+                                {t("email")}
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Role
+                                {t("role")}
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Created At
+                                {t("createdAt") || "Created At"}
                             </th>
                         </tr>
                     </thead>
@@ -124,7 +127,7 @@ export default function StaffClient({ initialUsers }: StaffClientProps) {
                         {users.length === 0 && (
                             <tr>
                                 <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
-                                    No staff members found.
+                                    {t("noStaffFound") || "No staff members found."}
                                 </td>
                             </tr>
                         )}
@@ -136,7 +139,7 @@ export default function StaffClient({ initialUsers }: StaffClientProps) {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
                         <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-xl font-bold">Add New Staff</h2>
+                            <h2 className="text-xl font-bold">{t("addStaff")}</h2>
                             <button
                                 onClick={() => setIsModalOpen(false)}
                                 className="text-gray-500 hover:text-gray-700"
@@ -147,7 +150,7 @@ export default function StaffClient({ initialUsers }: StaffClientProps) {
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Name</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("name")}</label>
                                 <input
                                     {...register("name")}
                                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
@@ -156,7 +159,7 @@ export default function StaffClient({ initialUsers }: StaffClientProps) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Email</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("email")}</label>
                                 <input
                                     {...register("email")}
                                     type="email"
@@ -166,7 +169,7 @@ export default function StaffClient({ initialUsers }: StaffClientProps) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Password</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("password") || "Password"}</label>
                                 <input
                                     {...register("password")}
                                     type="password"
@@ -176,7 +179,7 @@ export default function StaffClient({ initialUsers }: StaffClientProps) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Role</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("role")}</label>
                                 <select
                                     {...register("role")}
                                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
@@ -195,7 +198,7 @@ export default function StaffClient({ initialUsers }: StaffClientProps) {
                                     onClick={() => setIsModalOpen(false)}
                                     className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                                 >
-                                    Cancel
+                                    {tCommon("cancel")}
                                 </button>
                                 <button
                                     type="submit"
@@ -203,7 +206,7 @@ export default function StaffClient({ initialUsers }: StaffClientProps) {
                                     className="flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:bg-gray-400"
                                 >
                                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Create User
+                                    {t("createUser")}
                                 </button>
                             </div>
                         </form>

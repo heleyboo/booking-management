@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Loader2, Plus, X, Store, User, Pencil } from "lucide-react"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 
 const branchSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -23,6 +24,8 @@ interface BranchClientProps {
 }
 
 export default function BranchClient({ initialBranches, potentialManagers }: BranchClientProps) {
+    const t = useTranslations("Branches")
+    const tCommon = useTranslations("Common")
     const [branches, setBranches] = useState(initialBranches)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingBranch, setEditingBranch] = useState<any | null>(null)
@@ -75,17 +78,17 @@ export default function BranchClient({ initialBranches, potentialManagers }: Bra
 
             if (editingBranch) {
                 setBranches(branches.map(b => b.id === savedBranch.id ? savedBranch : b))
-                toast.success("Branch updated successfully")
+                toast.success(t("branchUpdated"))
             } else {
                 setBranches([savedBranch, ...branches])
-                toast.success("Branch created successfully")
+                toast.success(t("branchCreated"))
             }
 
             setIsModalOpen(false)
             reset()
             router.refresh()
         } catch (error) {
-            toast.error("Something went wrong")
+            toast.error(t("somethingWentWrong"))
         } finally {
             setIsLoading(false)
         }
@@ -94,13 +97,13 @@ export default function BranchClient({ initialBranches, potentialManagers }: Bra
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold text-gray-900">Branch Management</h1>
+                <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
                 <button
                     onClick={openCreateModal}
                     className="flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
                 >
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Branch
+                    {t("addBranch")}
                 </button>
             </div>
 
@@ -125,11 +128,11 @@ export default function BranchClient({ initialBranches, potentialManagers }: Bra
                             {branch.manager ? (
                                 <div className="inline-flex items-center text-xs text-green-700 bg-green-50 px-2 py-1 rounded-md border border-green-100">
                                     <User className="h-3 w-3 mr-1" />
-                                    Manager: {branch.manager.name}
+                                    {t("manager")}: {branch.manager.name}
                                 </div>
                             ) : (
                                 <div className="inline-flex items-center text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
-                                    No Manager Assigned
+                                    {t("noManager")}
                                 </div>
                             )}
                         </div>
@@ -149,14 +152,14 @@ export default function BranchClient({ initialBranches, potentialManagers }: Bra
                                 }}
                                 className="text-indigo-600 hover:text-indigo-800 font-medium z-10"
                             >
-                                Manage Services
+                                {t("manageServices") || "Manage Services"}
                             </button>
                         </div>
                     </div>
                 ))}
                 {branches.length === 0 && (
                     <div className="col-span-full py-12 text-center text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                        No branches found. Click "Add Branch" to create one.
+                        {t("noBranchesFound") || "No branches found. Click \"Add Branch\" to create one."}
                     </div>
                 )}
             </div>
@@ -165,7 +168,7 @@ export default function BranchClient({ initialBranches, potentialManagers }: Bra
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
                         <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-xl font-bold">{editingBranch ? "Edit Branch" : "Add New Branch"}</h2>
+                            <h2 className="text-xl font-bold">{editingBranch ? t("editBranch") : t("addBranch")}</h2>
                             <button
                                 onClick={() => setIsModalOpen(false)}
                                 className="text-gray-500 hover:text-gray-700"
@@ -176,7 +179,7 @@ export default function BranchClient({ initialBranches, potentialManagers }: Bra
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Branch Name</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("name")}</label>
                                 <input
                                     {...register("name")}
                                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
@@ -186,7 +189,7 @@ export default function BranchClient({ initialBranches, potentialManagers }: Bra
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Address</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("address")}</label>
                                 <input
                                     {...register("address")}
                                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
@@ -195,7 +198,7 @@ export default function BranchClient({ initialBranches, potentialManagers }: Bra
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Phone</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("phone")}</label>
                                 <input
                                     {...register("phone")}
                                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
@@ -204,19 +207,19 @@ export default function BranchClient({ initialBranches, potentialManagers }: Bra
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Branch Manager</label>
+                                <label className="block text-sm font-medium text-gray-700">{t("manager")}</label>
                                 <select
                                     {...register("managerId")}
                                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
                                 >
-                                    <option value="">-- No Manager --</option>
+                                    <option value="">{t("noManager")}</option>
                                     {(potentialManagers || []).map(manager => (
                                         <option key={manager.id} value={manager.id}>
                                             {manager.name} ({manager.email})
                                         </option>
                                     ))}
                                 </select>
-                                <p className="mt-1 text-xs text-gray-500">Only users with 'MANAGER' role are shown.</p>
+                                <p className="mt-1 text-xs text-gray-500">{t("onlyManagersShown")}</p>
                             </div>
 
                             <div className="mt-6 flex justify-end gap-2">
@@ -225,7 +228,7 @@ export default function BranchClient({ initialBranches, potentialManagers }: Bra
                                     onClick={() => setIsModalOpen(false)}
                                     className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                                 >
-                                    Cancel
+                                    {t("cancel")}
                                 </button>
                                 <button
                                     type="submit"
@@ -233,7 +236,7 @@ export default function BranchClient({ initialBranches, potentialManagers }: Bra
                                     className="flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:bg-gray-400"
                                 >
                                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {editingBranch ? "Update Branch" : "Create Branch"}
+                                    {editingBranch ? t("updateBranch") || "Update Branch" : t("createBranch") || "Create Branch"}
                                 </button>
                             </div>
                         </form>

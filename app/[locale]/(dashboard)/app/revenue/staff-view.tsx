@@ -341,30 +341,42 @@ export function StaffView() {
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 md:col-span-2">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 bg-green-50 text-green-600 rounded-lg">
+                {/* Cash Widget */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                            <Banknote className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">{t('cash')}</p>
+                            <h3 className="text-2xl font-bold text-gray-900">₩{stats.totalCash.toLocaleString()}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bank Widget */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
                             <DollarSign className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-gray-500">{t('totalRevenue')}</p>
-                            <h3 className="text-2xl font-bold text-gray-900">₩{stats.totalRevenue.toLocaleString()}</h3>
+                            <p className="text-sm font-medium text-gray-500">{t('bank')}</p>
+                            <h3 className="text-2xl font-bold text-gray-900">₩{stats.totalBank.toLocaleString()}</h3>
                         </div>
                     </div>
-                    {/* Progress Bar Breakdown */}
-                    <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden flex">
-                        {stats.totalRevenue > 0 && (
-                            <>
-                                <div style={{ width: `${(stats.totalCash / stats.totalRevenue) * 100}%` }} className="bg-emerald-500 h-full" title={t('cash')} />
-                                <div style={{ width: `${(stats.totalBank / stats.totalRevenue) * 100}%` }} className="bg-blue-500 h-full" title={t('bank')} />
-                                <div style={{ width: `${(stats.totalCard / stats.totalRevenue) * 100}%` }} className="bg-purple-500 h-full" title={t('card')} />
-                            </>
-                        )}
-                    </div>
-                    <div className="flex justify-between mt-2 text-xs text-gray-500">
-                        <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-emerald-500"></div>{t('cash')}</span>
-                        <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-500"></div>{t('bank')}</span>
-                        <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-purple-500"></div>{t('card')}</span>
+                </div>
+
+                {/* Card Widget */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-purple-50 text-purple-600 rounded-lg">
+                            <CreditCard className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">{t('card')}</p>
+                            <h3 className="text-2xl font-bold text-gray-900">₩{stats.totalCard.toLocaleString()}</h3>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -598,3 +610,4 @@ export function StaffView() {
         </div>
     )
 }
+
